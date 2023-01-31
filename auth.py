@@ -1,10 +1,14 @@
 import requests
 import webbrowser
 import time
+import os
+from urllib.parse import urlparse
 
 CLIENT_ID = "6cc55721e136b29c9d0f"
 SCOPE = "repo"
 GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code"
+TOKEN_PATH = os.path.join(os.path.dirname(__file__), "token.txt")
+
 
 def login():
     params = {
@@ -41,3 +45,18 @@ def login():
                 print(f"Error: {data_token}")
         else:
             return data_token["access_token"]
+
+def get_token():
+    if os.path.exists(TOKEN_PATH):
+        with open(TOKEN_PATH, "r") as f:
+            token = f.read()
+    else:
+        token = login()
+        with open(TOKEN_PATH, "w") as f:
+            f.write(token)
+    return token
+
+def auth_url(url):
+    token = get_token()
+    parsed = urlparse(url)
+    return f"{parsed.scheme}://{token}@{parsed.netloc}/{parsed.path}"

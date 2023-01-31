@@ -1,6 +1,5 @@
 import sys
 import subprocess
-import pkg_resources
 
 
 MODULES_PATH = "pymodules"
