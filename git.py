@@ -30,14 +30,12 @@ def main():
     for word in words:
         if word.startswith("https:") or word.startswith("http:"):
             word = auth_url(word)
+        if " " in word:
+            word = '"' + word + '"'
         args.append(word)
     command = f"{GIT_EXE_PATH} {' '.join(args)}"
     print(f"Executing command: {command}")
     os.system(command)
-    
-    # git_url = "https://github.com/DanielRoulin/git-auto.git"
-    # os.chdir("J:\test")
-    # os.system(GIT_EXE_PATH + " clone " + auth_url(git_url) + "test")
         
 def get_token():
     CLIENT_ID = "6cc55721e136b29c9d0f"
