@@ -64,6 +64,8 @@ def create_repo(name, private):
     else:
         print("Error creating repository:", response.json()["message"])
         exit()
+        
+    return response.json()["clone_url"]
 
 def git(args):
     # Auth + Execute command
