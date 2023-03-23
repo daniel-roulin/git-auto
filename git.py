@@ -23,20 +23,61 @@ def main():
         
         with open(TOKEN_PATH, "w") as f:
             f.write(get_token())
+            
+    with open(TOKEN_PATH, "r") as f:
+        token = f.read()
+            
+    command = sys.argv[0]
+    if command == "sync":
+        message = input("Commit message: ")
+        git(["add", "."])
+        git(["commit", "-m", message])
+        git(["push"])
+    elif command == "publish":
+        git(["init"])
+        git(["branch" "-M" "main"])
+        repo_name = input("Repository name: ")
+        is_private = input("Public repo? [y/n] ") != "y"
+        create_repo(repo_name, is_private)
+        git(["remote", "add", "origin", https://github.com/DanielRoulin/Test-of-the-API.git])
+        git(["push", "-u", "origin", "main"])
+    
+    
+def create_repo(name, private):
+    # set the authentication header
+    headers = {
+        "Authorization": f"token {token}"
+    }
 
+    # set the request body
+    data = {
+        "name": name,
+        "private": private,
+    }
+
+    # make the POST request to create the new repository
+    response = requests.post("https://api.github.com/user/repos", headers=headers, json=data)
+
+    # check the response status code
+    if response.status_code == 201:
+        print("Repository created successfully")
+    else:
+        print("Error creating repository:", response.json()["message"])
+        exit()
+
+def git(args):
     # Auth + Execute command
-    words = sys.argv[1:]
-    args = []
-    for word in words:
-        if word.startswith("https:") or word.startswith("http:"):
-            word = auth_url(word)
-        if " " in word:
-            word = '"' + word + '"'
-        args.append(word)
-    command = f"{GIT_EXE_PATH} {' '.join(args)}"
-    print(f"Executing command: {command}")
-    os.system(command)
-        
+    args_quoted = []
+    for arg in args:
+        if arg.startswith("https:") or arg.startswith("http:"):
+            arg = auth_url(arg)
+        if " " in arg:
+            arg = '"' + arg + '"'
+        args_quoted.append(word)
+    full_command = f"{GIT_EXE_PATH} {' '.join(args_quoted)}"
+    print(f"Executing command: {full_command}")
+    os.system(full_command)
+    
 def get_token():
     CLIENT_ID = "6cc55721e136b29c9d0f"
     SCOPE = "repo"
@@ -73,8 +114,6 @@ def get_token():
             return data_token["access_token"] 
 
 def auth_url(url):
-    with open(TOKEN_PATH, "r") as f:
-        token = f.read()
     parsed = urlparse(url)
     return f"{parsed.scheme}://{token}@{parsed.netloc}/{parsed.path}"
         
